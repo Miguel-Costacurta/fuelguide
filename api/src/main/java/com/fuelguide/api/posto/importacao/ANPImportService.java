@@ -1,8 +1,7 @@
 package com.fuelguide.api.posto.importacao;
 
-import com.fuelguide.api.posto.PostoModel;
-import com.fuelguide.api.posto.PostoRepository;
-import org.hibernate.sql.ast.tree.expression.Star;
+import com.fuelguide.api.posto.PostoEntity;
+import com.fuelguide.api.posto.IPostoRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -12,10 +11,10 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class ANPImportService {
-    private final PostoRepository postoRepository;
+    private final IPostoRepository IPostoRepository;
 
-    public ANPImportService(PostoRepository postoRepository){
-        this.postoRepository = postoRepository;
+    public ANPImportService(IPostoRepository IPostoRepository){
+        this.IPostoRepository = IPostoRepository;
     }
 
     public void importarCSV(){
@@ -40,7 +39,7 @@ public class ANPImportService {
 
                 String[] cols = line.split(";");
 
-                PostoModel posto = new PostoModel();
+                PostoEntity posto = new PostoEntity();
 
                 posto.setNome(cols[3]);
                 posto.setCnpj(cols[1]);
@@ -48,7 +47,7 @@ public class ANPImportService {
                 posto.setMunicipio(cols[9]);
                 posto.setEstado(cols[10]);
 
-                postoRepository.save(posto);
+                IPostoRepository.save(posto);
             }
         } catch (Exception e){
             throw new RuntimeException("Erro ao importar CSV ANP", e);

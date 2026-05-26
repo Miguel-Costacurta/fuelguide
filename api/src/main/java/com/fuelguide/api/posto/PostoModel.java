@@ -1,37 +1,20 @@
 package com.fuelguide.api.posto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-@Entity
-@Table(name = "tlb_postos")
 public class PostoModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    private String cnpj;
+    @NotBlank(message = "Nome do posto é obrigatório!")
     private String nome;
-    private String endereco;
-    private String municipio;
-    private String estado;
-    private Double lat;
-    private Double lon;
 
-    public Long getId() {
-        return id;
-    }
+    @NotBlank(message = "Cidade é obrigatório!")
+    private String cidade;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCnpj() {
-        return cnpj;
-    }
-
-    public void setCnpj(String cnpj) {
-        this.cnpj = cnpj;
-    }
+    @NotNull(message = "Preço da gasolina é obrigatório!")
+    @Positive(message = "Preço deve ser maior que zero")
+    private Double preçoGasolina;
 
     public String getNome() {
         return nome;
@@ -41,44 +24,20 @@ public class PostoModel {
         this.nome = nome;
     }
 
-    public String getEndereco() {
-        return endereco;
+    public String getCidade() {
+        return cidade;
     }
 
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
     }
 
-    public String getMunicipio() {
-        return municipio;
+    public Double getPreçoGasolina() {
+        return preçoGasolina;
     }
 
-    public void setMunicipio(String municipio) {
-        this.municipio = municipio;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public Double getLat() {
-        return lat;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
-    }
-
-    public Double getLon() {
-        return lon;
-    }
-
-    public void setLon(Double lon) {
-        this.lon = lon;
+    public void setPreçoGasolina(Double preçoGasolina) {
+        this.preçoGasolina = preçoGasolina;
     }
 
 }

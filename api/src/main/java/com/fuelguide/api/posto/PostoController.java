@@ -2,12 +2,8 @@ package com.fuelguide.api.posto;
 
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,15 +15,32 @@ public class PostoController {
     }
 
     @GetMapping("/postos")
-    public ResponseEntity<List<PostoModel>> listarPostos(){
-        List<PostoModel> postoModel = postoService.listarPostos();
+    public ResponseEntity<List<PostoEntity>> listarPostos(){
+        List<PostoEntity> postoEntity = postoService.listarPostos();
 
-        return ResponseEntity.ok().body(postoModel);
+        return ResponseEntity.ok().body(postoEntity);
+    }
+
+    @GetMapping("/postos/cidade/{cidade}")
+    public ResponseEntity<List<PostoEntity>> buscarPorCidade(@PathVariable String cidade){
+        return ResponseEntity.status(200).body(postoService.buscarPorCidade(cidade));
     }
 
     @PostMapping("/postos")
-    public ResponseEntity<PostoModel> salvarPosto(@RequestBody PostoModel postoModel){
-        PostoModel salvo = postoService.salvarPosto(postoModel);
+    public ResponseEntity<PostoEntity> salvarPosto(@RequestBody PostoEntity postoEntity){
+        PostoEntity salvo = postoService.salvarPosto(postoEntity);
         return ResponseEntity.status(201).body(salvo);
+    }
+
+    @PostMapping("/importar")
+    public ResponseEntity<List<PostoEntity>> importarPostos(@RequestBody List<PostoEntity> postos){
+        List<PostoEntity> salvos = postoService.importarPostos(postos);
+
+        return ResponseEntity.status(201).body(salvos);
+    }
+
+    @GetMapping("/postos/menor-preco/{tipo}")
+    public ResponseEntity<List<PostoEntity>> menorPreco(@PathVariable ETipoCombustivel tipo){
+        return ResponseEntity.status(200).body(postoService.buscarMaisBaratoPorCombustivel(tipo));
     }
 }
