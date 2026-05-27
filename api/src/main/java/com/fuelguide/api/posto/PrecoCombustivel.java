@@ -2,6 +2,8 @@ package com.fuelguide.api.posto;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class PrecoCombustivel {
 
@@ -11,6 +13,10 @@ public class PrecoCombustivel {
 
     @Enumerated(EnumType.STRING)
     private ETipoCombustivel tipo;
+
+    @ManyToOne
+    @JoinColumn(name = "posto_id")
+    private PostoEntity postoEntity;
 
     private Double valor;
 

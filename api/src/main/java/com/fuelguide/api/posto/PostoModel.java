@@ -14,7 +14,7 @@ public class PostoModel {
 
     @NotNull(message = "Preço da gasolina é obrigatório!")
     @Positive(message = "Preço deve ser maior que zero")
-    private Double preçoGasolina;
+    private Double precoGasolina;
 
     public String getNome() {
         return nome;
@@ -32,12 +32,12 @@ public class PostoModel {
         this.cidade = cidade;
     }
 
-    public Double getPreçoGasolina() {
-        return preçoGasolina;
+    public Double getPrecoGasolina() {
+        return precoGasolina;
     }
 
     public void setPreçoGasolina(Double preçoGasolina) {
-        this.preçoGasolina = preçoGasolina;
+        this.precoGasolina = precoGasolina;
     }
 
 }

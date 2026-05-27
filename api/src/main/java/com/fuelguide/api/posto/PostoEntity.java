@@ -15,7 +15,7 @@ public class PostoEntity {
     private String cnpj;
     private String nome;
     private String endereco;
-    private String municipio;
+    private String cidade;
     private String estado;
     private Double lat;
     private Double lon;
@@ -55,12 +55,12 @@ public class PostoEntity {
         this.endereco = endereco;
     }
 
-    public String getMunicipio() {
-        return municipio;
+    public String getCidade() {
+        return cidade;
     }
 
-    public void setMunicipio(String municipio) {
-        this.municipio = municipio;
+    public void setMunicipio(String cidade) {
+        this.cidade = cidade;
     }
 
     public String getEstado() {
