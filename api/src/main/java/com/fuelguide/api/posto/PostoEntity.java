@@ -1,8 +1,10 @@
 package com.fuelguide.api.posto;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,7 +28,8 @@ public class PostoEntity {
     private Double lon;
 
     @OneToMany(mappedBy = "posto", cascade = CascadeType.ALL)
-    private List<PrecoCombustivel> precos;
+    @JsonManagedReference
+    private List<PrecoCombustivel> precos = new ArrayList<>();
 
     public Long getId() {
         return id;

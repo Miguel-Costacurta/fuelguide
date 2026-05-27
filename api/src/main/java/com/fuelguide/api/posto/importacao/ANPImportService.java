@@ -1,24 +1,21 @@
 package com.fuelguide.api.posto.importacao;
 
-import com.fuelguide.api.posto.ETipoCombustivel;
-import com.fuelguide.api.posto.PostoEntity;
-import com.fuelguide.api.posto.IPostoRepository;
-import com.fuelguide.api.posto.PrecoCombustivel;
+import com.fuelguide.api.posto.*;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class ANPImportService {
-    private final IPostoRepository IPostoRepository;
+    private final IPostoRepository iPostoRepository;
 
-    public ANPImportService(IPostoRepository IPostoRepository){
-        this.IPostoRepository = IPostoRepository;
+    public ANPImportService(IPostoRepository iPostoRepository){
+        this.iPostoRepository = iPostoRepository;
     }
 
     public void importarCSV(){
@@ -32,7 +29,7 @@ public class ANPImportService {
                     new InputStreamReader(is, StandardCharsets.ISO_8859_1)
             );
 
-            List<PostoEntity> batch = new ArrayList<>();
+            Map<String, PostoEntity> mapaPostos = new HashMap<>();
 
             String line;
             boolean firstLine = true;
@@ -45,44 +42,44 @@ public class ANPImportService {
                 }
 
                 String[] cols = line.split(";");
-
                 if(cols.length < 13) continue;
 
-                PostoEntity posto = new PostoEntity();
-
-                posto.setNome(cols[3].trim());
-                posto.setCnpj(cols[4].trim());
-                posto.setEndereco(cols[5].trim());
-                posto.setMunicipio(cols[2].trim());
-                posto.setEstado(cols[1].trim());
-
                 ETipoCombustivel tipo = mapearCombustivel(cols[10].trim());
-
-                if (tipo == null)continue;
+                if(tipo == null) continue;
 
                 String precoStr = cols[12].trim().replace(",",".");
-
                 if(precoStr.isEmpty()) continue;
-
                 Double preco = Double.parseDouble(precoStr);
 
-                PrecoCombustivel precoCombustivel = new PrecoCombustivel();
-                precoCombustivel.setTipo(tipo);
-                precoCombustivel.setValor(preco);
-                precoCombustivel.setPosto(posto);
+                String cnpj = cols[4].trim();
+                String nome = cols[3].trim();
+                String endereco = cols[5].trim();
+                String municipio = cols[2].trim();
+                String estado = cols[1].trim();
 
-                posto.setPrecos(List.of(precoCombustivel));
+                PostoEntity posto = mapaPostos.computeIfAbsent(cnpj, c -> iPostoRepository.findByCnpj(c)
+                                .orElseGet(() ->{
+                    PostoEntity novo = new PostoEntity();
+                    novo.setCnpj(c);
+                    novo.setNome(nome);
+                    novo.setEndereco(endereco);
+                    novo.setMunicipio(municipio);
+                    novo.setEstado(estado);
+                    return novo;
+                })
+                );
 
-                batch.add(posto);
+                boolean jaExiste = posto.getPrecos().stream().anyMatch(p -> p.getTipo() == tipo);
 
-                if(batch.size() == 1000){
-                    IPostoRepository.saveAll(batch);
-                    batch.clear();
+                if(!jaExiste){
+                    PrecoCombustivel precoCombustivel = new PrecoCombustivel();
+                    precoCombustivel.setTipo(tipo);
+                    precoCombustivel.setValor(preco);
+                    precoCombustivel.setPosto(posto);
+                    posto.getPrecos().add(precoCombustivel);
                 }
             }
-            if (!batch.isEmpty()){
-                IPostoRepository.saveAll(batch);
-            }
+            iPostoRepository.saveAll(mapaPostos.values());
         } catch (Exception e){
             throw new RuntimeException("Erro ao importar CSV ANP", e);
         }

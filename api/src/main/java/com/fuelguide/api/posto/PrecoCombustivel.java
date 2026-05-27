@@ -1,5 +1,7 @@
 package com.fuelguide.api.posto;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.dialect.type.PostgreSQLOrdinalEnumJdbcType;
 
@@ -22,6 +24,7 @@ public class PrecoCombustivel {
 
     @ManyToOne
     @JoinColumn(name = "posto_id")
+    @JsonBackReference
     private PostoEntity posto;
 
     private Double valor;

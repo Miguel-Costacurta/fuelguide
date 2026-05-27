@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostoService {
@@ -27,6 +28,12 @@ public class PostoService {
 
     public List<PostoEntity> buscarPorCidade(String cidade){
         return iPostoRepository.findByCidade(cidade);
+    }
+
+    public Optional<PostoEntity> buscarPorCnpj(String cnpj) {return iPostoRepository.findByCnpj(cnpj);}
+
+    public List<PostoEntity> buscarPorCidadeECombustivel(String cidade, ETipoCombustivel tipo){
+        return iPostoRepository.findByCidadeAndPrecos_Tipo(cidade, tipo);
     }
 
     public List<PostoEntity> buscarMaisBaratoPorCombustivel(ETipoCombustivel tipo){
