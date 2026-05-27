@@ -9,7 +9,12 @@ import java.util.List;
 @Table(name = "tlb_postos")
 public class PostoEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "posto_seq")
+    @SequenceGenerator(
+            name = "posto_seq",
+            sequenceName = "posto_seq",
+            allocationSize = 1000
+    )
     private Long id;
 
     private String cnpj;
@@ -20,7 +25,7 @@ public class PostoEntity {
     private Double lat;
     private Double lon;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "posto", cascade = CascadeType.ALL)
     private List<PrecoCombustivel> precos;
 
     public Long getId() {

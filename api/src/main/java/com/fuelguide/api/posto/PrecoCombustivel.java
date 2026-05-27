@@ -9,7 +9,12 @@ import java.util.List;
 public class PrecoCombustivel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "preco_seq")
+    @SequenceGenerator(
+            name = "preco_seq",
+            sequenceName = "preco_seq",
+            allocationSize = 1000
+    )
     private Long id;
 
     @Enumerated(EnumType.STRING)
