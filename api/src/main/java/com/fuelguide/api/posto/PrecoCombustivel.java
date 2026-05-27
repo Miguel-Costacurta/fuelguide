@@ -1,6 +1,7 @@
 package com.fuelguide.api.posto;
 
 import jakarta.persistence.*;
+import org.hibernate.dialect.type.PostgreSQLOrdinalEnumJdbcType;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class PrecoCombustivel {
 
     @ManyToOne
     @JoinColumn(name = "posto_id")
-    private PostoEntity postoEntity;
+    private PostoEntity posto;
 
     private Double valor;
 
@@ -42,5 +43,12 @@ public class PrecoCombustivel {
 
     public void setValor(Double valor) {
         this.valor = valor;
+    }
+
+    public void setPosto(PostoEntity posto) {
+        this.posto = posto;
+    }
+    public PostoEntity getPosto(){
+        return posto;
     }
 }
