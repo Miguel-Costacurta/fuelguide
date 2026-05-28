@@ -79,6 +79,7 @@ public class ORSService {
 
         System.out.println(sb);
         return sb.toString();
+
     }
 
     public String reverseGeocode(double lat, double lng) throws Exception{
@@ -97,8 +98,6 @@ public class ORSService {
                 .path("properties")
                 .path("locality");
 
-        String cidade = jsonResponse.asText();
-
-        return cidade;
+        return jsonResponse.asString();
     }
 }
