@@ -36,13 +36,24 @@ public class RotaService {
         List<PostoRecomendado> postosRecomendados = new ArrayList<>();
 
         for(PostoEntity posto : postos){
+
+            var precoDoCombustivel = posto.getPrecos().stream()
+                    .filter(preco -> preco.getTipo()
+                            .name()
+                            .equalsIgnoreCase(rotaRequest.getCombustivel().trim()))
+                    .findFirst();
+
+            if(precoDoCombustivel.isEmpty()){continue;}
+
             PostoRecomendado postoRecomendado = new PostoRecomendado();
             postoRecomendado.setNome(posto.getNome());
             postoRecomendado.setCidade(posto.getCidade());
             postoRecomendado.setEstado(posto.getEstado());
-            postoRecomendado.setPreco(posto.getPrecos().get(0).getValor());
+            postoRecomendado.setCombustivel(rotaRequest.getCombustivel());
+            postoRecomendado.setPreco(precoDoCombustivel.get().getValor());
             postoRecomendado.setKmDaOrigem(calcularDistanciaKm(coordinates[0], coordinates[1], posto.getLat(), posto.getLon()));
 
+            postoRecomendado.setCustoEstimado( (rotaRequest.getCapacidadeLitros() - (rotaRequest.getNivelAtualPct()/100)*rotaRequest.getCapacidadeLitros()) * postoRecomendado.getPreco() );
 
             postosRecomendados.add(postoRecomendado);
         }
@@ -53,11 +64,18 @@ public class RotaService {
         double km_ideal = km_disponivel * 0.65;
         double km_limite = km_disponivel * 0.85;
 
-        List<PostoRecomendado> candidatos = postosRecomendados.stream().filter(p -> p.getKmDaOrigem() <= km_ideal).toList();
+        List<PostoRecomendado> candidatos = new ArrayList<>(postosRecomendados.stream()
+                .filter(p -> p.getKmDaOrigem() <= km_ideal)
+                .toList()
+        );
+
         System.out.println(candidatos);
+
+        calcularEOrdenarScores(candidatos,rotaRequest, km_ideal);
 
         RotaResponse response = new RotaResponse();
         response.setParadas(candidatos);
+
 
         return response;
     }
@@ -104,7 +122,7 @@ public class RotaService {
             double scoreSeguranca = nivelAoChegar / 100.0;
 
             double distanciaIdeal = Math.abs(posto.getKmDaOrigem() - kmIdeal);
-            double scorePosicao = 1 - (distanciaIdeal = kmIdeal);
+            double scorePosicao = 1 - (distanciaIdeal / kmIdeal);
 
             scorePosicao = Math.max(0, Math.min(1, scorePosicao));
 
@@ -117,6 +135,5 @@ public class RotaService {
         }
 
         candidatos.sort(Comparator.comparingDouble(PostoRecomendado::getScore).reversed());
-
    }
 }
