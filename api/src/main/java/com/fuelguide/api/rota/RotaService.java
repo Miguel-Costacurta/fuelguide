@@ -40,6 +40,7 @@ public class RotaService {
             postoRecomendado.setNome(posto.getNome());
             postoRecomendado.setCidade(posto.getCidade());
             postoRecomendado.setEstado(posto.getEstado());
+            postoRecomendado.setPreco(posto.getPrecos().get(0).getValor());
             postoRecomendado.setKmDaOrigem(calcularDistanciaKm(coordinates[0], coordinates[1], posto.getLat(), posto.getLon()));
 
 
@@ -60,6 +61,7 @@ public class RotaService {
 
         return response;
     }
+
     private double calcularDistanciaKm(double latO, double lonO, double latD, double lonD ){
         double r = 6371.0;
         double dLat = Math.toRadians(latD - latO);
@@ -70,5 +72,51 @@ public class RotaService {
         return r * c;
     }
 
-    private double calcularScore()
+   private void calcularEOrdenarScores(List<PostoRecomendado> candidatos, RotaRequest rotaRequest, double kmIdeal){
+        if(candidatos.isEmpty()) return;
+
+        candidatos.removeIf(p -> {
+            double nivelAochegar = rotaRequest.getNivelAtualPct() - (p.getKmDaOrigem() / rotaRequest.getAutonomiaKm()) * 100;
+            return nivelAochegar < 20;
+        });
+
+        if(candidatos.isEmpty()) return;
+
+        double minPreco = candidatos.stream()
+                .mapToDouble(PostoRecomendado::getPreco)
+                .min()
+                .orElse(0);
+
+        double maxPreco = candidatos.stream()
+                .mapToDouble(PostoRecomendado::getPreco)
+                .max()
+                .orElse(0);
+
+        double deltaPreco = maxPreco - minPreco;
+        if(deltaPreco == 0) deltaPreco = 1;
+
+        for (PostoRecomendado posto : candidatos){
+
+            double scorePreco = (maxPreco - posto.getPreco()) / deltaPreco;
+
+            double nivelAoChegar = rotaRequest.getNivelAtualPct() - (posto.getKmDaOrigem() / rotaRequest.getAutonomiaKm()) * 100;
+
+            double scoreSeguranca = nivelAoChegar / 100.0;
+
+            double distanciaIdeal = Math.abs(posto.getKmDaOrigem() - kmIdeal);
+            double scorePosicao = 1 - (distanciaIdeal = kmIdeal);
+
+            scorePosicao = Math.max(0, Math.min(1, scorePosicao));
+
+            double scoreFinal = (scorePreco * 0.33) +
+                    (scoreSeguranca * 0.33) +
+                    (scorePosicao * 0.34);
+
+            posto.setScore(scoreFinal);
+            posto.setNivelAoChegar(nivelAoChegar);
+        }
+
+        candidatos.sort(Comparator.comparingDouble(PostoRecomendado::getScore).reversed());
+
+   }
 }
