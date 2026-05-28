@@ -44,7 +44,7 @@ public class PostoController {
         return ResponseEntity.status(200).body(postoService.buscarMaisBaratoPorCombustivel(tipo));
     }
 
-    @GetMapping("/posto/cidade/{cidade}/combustivel/{tipo}")
+    @GetMapping("/postos/cidade/{cidade}/combustivel/{tipo}")
     public ResponseEntity<List<PostoEntity>> buscarPorCidadeECombustivel(@PathVariable String cidade, @PathVariable ETipoCombustivel tipo){
         return ResponseEntity.status(200).body(postoService.buscarPorCidadeECombustivel(cidade,tipo));
     }
