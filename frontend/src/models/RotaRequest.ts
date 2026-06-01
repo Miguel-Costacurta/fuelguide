@@ -7,4 +7,5 @@ export interface RotaRequest {
     autonomiaKm: number;
     capacidadeLitros: number;
     nivelAtualPct: number;
+    prioridade: string;
 }

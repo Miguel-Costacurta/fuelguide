@@ -6,4 +6,5 @@ export interface RotaResponse {
     custoTotal: number;
     nivelFinalPct: number;
     alertas: string[];
+    postosNaRota: PostoRecomendado[];
 }

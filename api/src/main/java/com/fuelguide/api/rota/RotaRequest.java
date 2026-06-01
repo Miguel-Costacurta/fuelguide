@@ -7,6 +7,15 @@ public class RotaRequest {
     private double autonomiaKm;
     private double capacidadeLitros;
     private double nivelAtualPct;
+    private String prioridade;
+
+    public String getPrioridade() {
+        return prioridade;
+    }
+
+    public void setPrioridade(String prioridade) {
+        this.prioridade = prioridade;
+    }
 
     public String getCidadeOrigem() {
         return cidadeOrigem;

@@ -26,6 +26,10 @@ public class PostoEntity {
     private String estado;
     private Double lat;
     private Double lon;
+    private String numero;
+    private String bairro;
+    private String cep;
+    private String fonteCoordenada;
 
     @OneToMany(mappedBy = "posto", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -67,7 +71,7 @@ public class PostoEntity {
         return cidade;
     }
 
-    public void setMunicipio(String cidade) {
+    public void setCidade(String cidade) {
         this.cidade = cidade;
     }
 
@@ -97,6 +101,38 @@ public class PostoEntity {
 
     public List<PrecoCombustivel> getPrecos() {
         return precos;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public String getBairro() {
+        return bairro;
+    }
+
+    public void setBairro(String bairro) {
+        this.bairro = bairro;
+    }
+
+    public String getCep() {
+        return cep;
+    }
+
+    public String getFonteCoordenada() {
+        return fonteCoordenada;
+    }
+
+    public void setFonteCoordenada(String fonteCoordenada) {
+        this.fonteCoordenada = fonteCoordenada;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
     }
 
     public void setPrecos(List<PrecoCombustivel> precos) {

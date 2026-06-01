@@ -1,47 +1,33 @@
 import type { RotaResponse } from "../models/RotaResponse";
-import type { TipoCombustivel } from "../models/TipoCombustivel";
 import ResultadoRota from "../components/ResultadoRota";
 import { calcularRota } from "../services/rotaService";
-import {useState} from "react";
+import { useState } from "react";
+import type { RotaRequest } from "../models/RotaRequest";
+import { RotaForm } from "../components/RotaForm";
+import type { PostoRecomendado } from "../models/PostoRecomendado";
+import MapaRota from "../components/MapaRota";
 
 function HomePage(){
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] =  useState("");
-
-    const [origem, setOrigem] = useState("");
-    const [destino, setDestino] = useState("");
-    const [autonomiaKm, setAutonomiaKm] = useState("");
-    const [capacidadeLitros, setCapacidadeLitros] = useState("");
-    const [combustivel, setCombustivel] = useState<TipoCombustivel>("ETANOL");
-    const [nivelAtualPct, setNivelAtualPct] = useState("");
+    const [postoSelecionado, setPostoSelecionado] = useState<PostoRecomendado | null>(null);
 
     const [resultado, setResultado] = useState<RotaResponse | null>(null);
 
-    async function handleTestarRota(){
-        
-        if(!origem || !destino){
-            setErro("Origem e destino são obrigátorios!")
-            return;
-        }
-
-        if(Number(autonomiaKm) <= 0 || Number(capacidadeLitros) <= 0 || Number(nivelAtualPct) <= 0){
-            setErro("Informações inválidas");
-            return;
-        }
-        
+    async function handleTestarRota(dados: RotaRequest){
         setErro("");
-        setResultado(null);
 
         try{
             setCarregando(true)
 
             const response = await calcularRota({
-               cidadeOrigem: origem,
-               cidadeDestino: destino,
-               combustivel: combustivel,
-               autonomiaKm: Number(autonomiaKm),
-               capacidadeLitros: Number(capacidadeLitros),
-               nivelAtualPct: Number(nivelAtualPct)
+               cidadeOrigem: dados.cidadeOrigem,
+               cidadeDestino: dados.cidadeDestino,
+               combustivel: dados.combustivel,
+               autonomiaKm: dados.autonomiaKm,
+               capacidadeLitros: dados.capacidadeLitros,
+               nivelAtualPct: dados.nivelAtualPct,
+               prioridade: dados.prioridade,
          });
 
          console.log(response)
@@ -57,55 +43,71 @@ function HomePage(){
     }
 
     return (
-        <main>
-            <h1>Fuelguide</h1>
-            <p>Planeje seu abastecimento com segurança</p>
-            
-            <input placeholder="Origem"
-            value={origem}
-            onChange={(e) => setOrigem(e.target.value)} 
-            />
+  <main className="h-screen flex bg-gray-900 text-white">
+    {!resultado ? (
+      // 🔵 TELA INICIAL
+      <div className="m-auto w-full max-w-md text-center px-4">
+        <h1 className="text-4xl font-bold mb-2">Fuel Guide</h1>
+        <p className="text-gray-400 mb-6">
+          Planeje sua viagem com segurança
+        </p>
 
-            <input placeholder="Destino"
-            value={destino}
-            onChange={(e) => setDestino(e.target.value)} 
-            />
-            
-            <label htmlFor="TipoCombustivel">
-                <select value={combustivel} required onChange={(e) => setCombustivel(e.target.value as TipoCombustivel)}>
-                <option value="ETANOL">Etanol</option>
-                <option value="GASOLINA">Gasolina Comum</option>
-                <option value="GASOLINA_ADITIVADA">Gasolina Aditivada</option>
-                <option value="GNV">GNV</option>
-                <option value="DIESEL_S10">Diesel S10</option>
-            </select>
-            </label>
-            
-            <input placeholder="Nivel do Tanque" 
-            value={nivelAtualPct}
-            onChange={(e) => setNivelAtualPct(e.target.value)}
-            />
+        <div className="bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <RotaForm onCalcular={handleTestarRota} loading={carregando} />
 
-            <input placeholder="Autonomia" 
-            value={autonomiaKm}
-            onChange={(e) => setAutonomiaKm(e.target.value)}
-            />
-
-            <input placeholder="Capacidade do tanque" 
-            value={capacidadeLitros}
-            onChange={(e) => setCapacidadeLitros(e.target.value)}
-            />
-            
-
-            <button onClick={handleTestarRota} disabled={carregando}>
-                Calcular Rota
+          {erro && (
+            <p className="text-red-400 mt-4 text-sm">{erro}</p>
+          )}
+        </div>
+      </div>
+    ) : (
+      // 🟢 APP COMPLETO
+      <>
+        {/* 🔹 SIDEBAR */}
+        <aside className="w-[320px] h-full bg-gray-800 border-r border-gray-700 flex flex-col">
+          
+          {/* FORM */}
+          <div className="p-4 border-b border-gray-700">
+            <button
+            onClick={() => setResultado(null)}
+            className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg w-full">
+                Calcular nova rota
             </button>
-            {carregando && <p>Calculando rota...</p>}
-            {erro && <p>{erro}</p>}
-            {resultado && <ResultadoRota resultado={resultado}/>}
+          </div>
 
-        </main>
-    );
+          {/* STATUS */}
+          <div className="p-4 space-y-2">
+            {carregando && (
+              <p className="text-yellow-400 text-sm">Calculando rota...</p>
+            )}
+
+            {erro && (
+              <p className="text-red-400 text-sm">{erro}</p>
+            )}
+          </div>
+
+          {/* RESULTADO */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <ResultadoRota resultado={resultado} 
+            selecionado={postoSelecionado}
+            onSelecionar = {setPostoSelecionado}/>
+          </div>
+        </aside>
+
+        {/* 🔹 MAPA */}
+        <section className="flex-1 relative">
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+            <MapaRota
+            resultado={resultado}
+            selecionado={postoSelecionado}
+            onSelecionar={setPostoSelecionado}
+            />
+          </div>
+        </section>
+      </>
+    )}
+  </main>
+);
 }
 
 

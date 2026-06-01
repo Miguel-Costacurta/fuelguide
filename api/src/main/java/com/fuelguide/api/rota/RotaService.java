@@ -5,6 +5,7 @@ import com.fuelguide.api.posto.PostoEntity;
 import com.fuelguide.api.posto.PrecoCombustivel;
 import org.apache.logging.log4j.util.PropertySource;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -86,6 +87,8 @@ public class RotaService {
             postoRecomendado.setPreco(precoEscolhido);
             postoRecomendado.setCustoEstimado( (rotaRequest.getCapacidadeLitros() -
                     (rotaRequest.getCapacidadeLitros() * (rotaRequest.getNivelAtualPct()/100))) * postoRecomendado.getPreco()  );
+            postoRecomendado.setLat(posto.getLat());
+            postoRecomendado.setLon(posto.getLon());
 
             double km = calcularDistanciaKm(
                     origemCoords[0],
@@ -127,7 +130,7 @@ public class RotaService {
         double kmAtual = 0;
         double nivelAtual = rotaRequest.getNivelAtualPct();
 
-        while((kmAtual + rotaRequest.getAutonomiaKm() * nivelAtual / 100) < distanciaTotal * 0.85){
+        while((kmAtual + rotaRequest.getAutonomiaKm() * nivelAtual / 100)   < distanciaTotal * 0.85){
 
             double kmDisponivel = rotaRequest.getAutonomiaKm() * (nivelAtual/100);
             double kmIdeal = kmAtual + kmDisponivel * 0.65;
@@ -200,6 +203,7 @@ public class RotaService {
         response.setDistanciaTotalKm(distanciaTotal);
         response.setNivelFinalPct(Math.max(0,nivelFinal));
         response.setAlertas(alertas);
+        response.setPostosNaRota(postoMapeados);
 
         return response;
     }
@@ -251,11 +255,12 @@ public class RotaService {
             double scorePosicao = 1 - (distanciaIdeal / kmIdeal);
 
             scorePosicao = Math.max(0, Math.min(1, scorePosicao));
-
-            double scoreFinal = (scorePreco * 0.33) +
-                    (scoreSeguranca * 0.33) +
-                    (scorePosicao * 0.34);
-
+            double scoreFinal = switch (rotaRequest.getPrioridade()) {
+                case "ECONOMIA" -> (scorePreco * 0.6) + (scoreSeguranca * 0.2) + (scorePosicao * 0.2);
+                case "DISTANCIA" -> (scorePreco * 0.3) + (scoreSeguranca * 0.2) + (scorePosicao * 0.5);
+                case "EQUILIBRADO" -> (scorePreco * 0.4) + (scoreSeguranca * 0.3) + (scorePosicao * 0.3);
+                default -> 0;
+            };
             posto.setScore(scoreFinal);
             posto.setNivelAoChegar(nivelAoChegar);
         }

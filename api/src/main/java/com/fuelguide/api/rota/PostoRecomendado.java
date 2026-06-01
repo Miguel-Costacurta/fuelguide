@@ -11,6 +11,8 @@ public class PostoRecomendado {
     private double nivelAoChegar;
     private double score;
 
+    private double lat;
+    private double lon;
     public String getNome() {
         return nome;
     }
@@ -69,6 +71,22 @@ public class PostoRecomendado {
 
     public double getNivelAoChegar() {
         return nivelAoChegar;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLon() {
+        return lon;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
     }
 
     public void setNivelAoChegar(double nivelAoChegar) {

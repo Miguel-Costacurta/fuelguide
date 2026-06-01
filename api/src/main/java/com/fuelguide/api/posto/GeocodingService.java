@@ -1,15 +1,11 @@
 package com.fuelguide.api.posto;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -50,5 +46,4 @@ public class GeocodingService {
             System.out.println(cidade + " - " + estado);
         }
     }
-
 }

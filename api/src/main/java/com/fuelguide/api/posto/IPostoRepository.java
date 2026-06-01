@@ -39,4 +39,5 @@ public interface IPostoRepository extends JpaRepository<PostoEntity, Long> {
             @Param("lat") double lat,
             @Param("lon") double lon
     );
+    List<PostoEntity> findByLatIsNull();
 }

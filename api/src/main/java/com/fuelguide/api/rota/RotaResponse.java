@@ -1,5 +1,7 @@
 package com.fuelguide.api.rota;
 
+import com.fuelguide.api.posto.PostoModel;
+
 import java.util.List;
 
 public class RotaResponse {
@@ -8,6 +10,7 @@ public class RotaResponse {
     private double custoTotal;
     private double nivelFinalPct;
     private List<String> alertas;
+    private List<PostoRecomendado> postosNaRota;
 
 
     public double getDistanciaTotalKm() {
@@ -48,5 +51,13 @@ public class RotaResponse {
 
     public void setAlertas(List<String> alertas) {
         this.alertas = alertas;
+    }
+
+    public List<PostoRecomendado> getPostosNaRota(){
+        return postosNaRota;
+    }
+
+    public void setPostosNaRota(List<PostoRecomendado> postosNaRota){
+        this.postosNaRota = postosNaRota;
     }
 }

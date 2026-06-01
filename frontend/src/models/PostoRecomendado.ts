@@ -10,4 +10,7 @@ export interface PostoRecomendado{
     custoEstimado: number;
     nivelAoChegar: number;
     score:number;
+
+    lat:number;
+    lon:number;
 }
