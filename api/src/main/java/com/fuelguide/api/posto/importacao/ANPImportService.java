@@ -110,7 +110,7 @@ public class ANPImportService {
         try {
             InputStream is = getClass()
                     .getClassLoader()
-                    .getResourceAsStream("anp/teste3-coordenadas.csv");
+                    .getResourceAsStream("anp/banco_de_postos.csv");
 
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(is, StandardCharsets.ISO_8859_1));
@@ -125,13 +125,14 @@ public class ANPImportService {
                 line = line.trim();
                 if (line.isBlank()) continue;
 
-                String[] cols = line.split(";");
-                if (cols.length < 5) continue;
+                String[] cols = line.split(",");
+                if (cols.length < 13) continue;
 
                 try {
-                    String cnpj = cols[0].trim();
-                    double lat  = Double.parseDouble(cols[3].trim());
-                    double lon  = Double.parseDouble(cols[4].trim());
+                    System.out.println(cols[4]);
+                    String cnpj = cols[1].trim();
+                    double lat  = Double.parseDouble(cols[5].trim());
+                    double lon  = Double.parseDouble(cols[6].trim());
 
                     Optional<PostoEntity> postoOpt = iPostoRepository.findByCnpj(cnpj);
 

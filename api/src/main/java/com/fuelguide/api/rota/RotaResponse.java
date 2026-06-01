@@ -11,7 +11,15 @@ public class RotaResponse {
     private double nivelFinalPct;
     private List<String> alertas;
     private List<PostoRecomendado> postosNaRota;
+    private List<CoordenadaRota> coordenadasRota;
 
+    public List<CoordenadaRota> getCoordenadasRota() {
+        return coordenadasRota;
+    }
+
+    public void setCoordenadasRota(List<CoordenadaRota> coordenadasRota) {
+        this.coordenadasRota = coordenadasRota;
+    }
 
     public double getDistanciaTotalKm() {
         return distanciaTotalKm;

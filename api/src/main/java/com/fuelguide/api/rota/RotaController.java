@@ -3,6 +3,8 @@ package com.fuelguide.api.rota;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/rota")
@@ -20,15 +22,10 @@ public class RotaController {
         return ResponseEntity.ok(rotaService.calcularRota(rotaRequest));
     }
 
-    @GetMapping("/teste-geocode")
-    public ResponseEntity<String> testeGeocode() throws Exception {
-        double[] coords = orsService.geocodificarCidade("Maringá");
-        return ResponseEntity.ok("testando");
-    }
-
-    @GetMapping("/teste-geocode2")
-    public ResponseEntity<String> testeGeocode2() throws Exception {
-        String coords = orsService.obterLinestringDaRota("Maringá", "Curitiba");
-        return ResponseEntity.ok("testando");
+    @GetMapping("/pontos-rota")
+    public ResponseEntity<List<CoordenadaRota>> testeGeocode2(@RequestParam String origem, @RequestParam String destino) throws Exception {
+        List<CoordenadaRota> coords = orsService.pontosDaRota(origem, destino);
+        List<CoordenadaRota> aMostrar = orsService.pontosParaOMapa(coords);
+        return ResponseEntity.ok(aMostrar);
     }
 }

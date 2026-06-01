@@ -174,6 +174,7 @@ public class RotaService {
 
     public RotaResponse calcularRota (RotaRequest rotaRequest) throws Exception {
         List<String> alertas = new ArrayList<>();
+        List<CoordenadaRota> coordenadasRotaMapa = new ArrayList<>();
 
         String linha = obterLinhaRota(rotaRequest);
         double distanciaTotal = calcularDistanciaTotalKm(linha);
@@ -204,6 +205,11 @@ public class RotaService {
         response.setNivelFinalPct(Math.max(0,nivelFinal));
         response.setAlertas(alertas);
         response.setPostosNaRota(postoMapeados);
+
+        coordenadasRotaMapa = orsService.pontosDaRota(rotaRequest.getCidadeOrigem(), rotaRequest.getCidadeDestino());
+        coordenadasRotaMapa = orsService.pontosParaOMapa(coordenadasRotaMapa);
+
+        response.setCoordenadasRota(coordenadasRotaMapa);
 
         return response;
     }
