@@ -106,12 +106,14 @@ public class RotaService {
         return list;
     }
 
-    private double[] calcularJanelaAutonomia(double autonomiaKm, double nivelPct){
-        double kmDisponivel = autonomiaKm * (nivelPct/100);
-        double kmIdeal = kmDisponivel * 0.65;
-        double kmLimite = kmDisponivel * 0.85;
+    private boolean precisaAbastecer(double kmAtual, double nivelAtual, double distanciaTotal, RotaRequest rotaRequest){
 
-        return new double[]{kmDisponivel, kmIdeal, kmLimite};
+        double distanciaRestante =  distanciaTotal - kmAtual;
+        double consumoAteDestinoPct = (distanciaRestante / rotaRequest.getAutonomiaKm()) * 100;
+
+        double nivelAochegarDestino = nivelAtual - consumoAteDestinoPct;
+
+        return nivelAochegarDestino < 20;
     }
 
     private List<PostoRecomendado> filtrarCandidatos(List<PostoRecomendado> postos,
@@ -129,28 +131,101 @@ public class RotaService {
 
         double kmAtual = 0;
         double nivelAtual = rotaRequest.getNivelAtualPct();
+        int iteracao = 1;
 
-        while((kmAtual + rotaRequest.getAutonomiaKm() * nivelAtual / 100)   < distanciaTotal * 0.85){
+
+        System.out.println("=== POSTOS RECOMENDADOS ORDENADOS POR KM ===");
+
+        postoRecomendados.stream()
+                .sorted(Comparator.comparingDouble(PostoRecomendado::getKmDaOrigem))
+                .forEach(p -> System.out.printf(
+                        "%.2f km | %s | %s - %s%n",
+                        p.getKmDaOrigem(),
+                        p.getNome(),
+                        p.getCidade(),
+                        p.getEstado()
+                ));
+
+        while(precisaAbastecer(kmAtual, nivelAtual, distanciaTotal, rotaRequest)){
 
             double kmDisponivel = rotaRequest.getAutonomiaKm() * (nivelAtual/100);
+
+            double fatorInicioJanela = nivelAtual < 35 ? 0.0 : 0.45;
+
+            double kmInicioJanela = kmAtual + kmDisponivel * fatorInicioJanela;
             double kmIdeal = kmAtual + kmDisponivel * 0.65;
             double kmLimite = kmAtual + kmDisponivel * 0.85;
 
+            System.out.printf(
+                    "%n=== Iteração %d ===%nkmAtual=%.2f | nivelAtual=%.2f | distanciaTotal=%.2f | kmDisponivel=%.2f | janela=%.2f até %.2f%n",
+                    iteracao++,
+                    kmAtual,
+                    nivelAtual,
+                    distanciaTotal,
+                    kmDisponivel,
+                    kmInicioJanela,
+                    kmLimite
+            );
+
+            PostoRecomendado melhor;
+
             List<PostoRecomendado> candidatos = filtrarCandidatos(
-                    postoRecomendados, kmAtual, kmLimite);
-            if(candidatos.isEmpty()){
-                alertas.add("Nenhum posto encontrado!");
-                break;
+                    postoRecomendados,
+                    kmInicioJanela,
+                    kmLimite
+            );
+
+            if (!candidatos.isEmpty()) {
+
+                calcularEOrdenarScores(candidatos, rotaRequest, kmIdeal, nivelAtual, kmAtual);
+
+                if (candidatos.isEmpty()) {
+                    alertas.add("Nenhum posto seguro na janela ideal.");
+                    break;
+                }
+
+                melhor = candidatos.getFirst();
+
+            } else {
+
+                List<PostoRecomendado> fallback = filtrarCandidatos(
+                        postoRecomendados,
+                        kmAtual + 1,
+                        kmAtual + kmDisponivel
+                );
+
+                if (fallback.isEmpty()) {
+                    alertas.add("Não foi possível completar a rota: nenhum posto alcançável após o km " + kmAtual);
+                    break;
+                }
+
+                List<PostoRecomendado> antesDaJanela = fallback.stream()
+                        .filter(p -> p.getKmDaOrigem() < kmInicioJanela)
+                        .toList();
+
+                List<PostoRecomendado> depoisDaJanela = fallback.stream()
+                        .filter(p -> p.getKmDaOrigem() > kmLimite)
+                        .toList();
+
+                if (!antesDaJanela.isEmpty()) {
+                    melhor = antesDaJanela.stream()
+                            .max(Comparator.comparingDouble(PostoRecomendado::getKmDaOrigem))
+                            .orElseThrow();
+
+                    alertas.add("Posto escolhido antes da janela ideal para evitar trecho sem postos.");
+
+                } else if (!depoisDaJanela.isEmpty()) {
+                    melhor = depoisDaJanela.stream()
+                            .min(Comparator.comparingDouble(PostoRecomendado::getKmDaOrigem))
+                            .orElseThrow();
+
+                    alertas.add("Posto escolhido após a janela ideal. Trecho crítico: combustível baixo ao chegar.");
+
+                } else {
+                    alertas.add("Não foi possível encontrar posto fora da janela ideal.");
+                    break;
+                }
             }
-
-            calcularEOrdenarScores(candidatos, rotaRequest, kmIdeal, nivelAtual, kmAtual);
-
-            if(candidatos.isEmpty()){
-                alertas.add("Nenhum posto seguro no caminho!");
-                break;
-            }
-
-            PostoRecomendado melhor = candidatos.getFirst();
 
             double kmPercorrido = melhor.getKmDaOrigem() - kmAtual;
             double consumoPct = (kmPercorrido / rotaRequest.getAutonomiaKm()) * 100;
@@ -161,13 +236,36 @@ public class RotaService {
 
             double custo = litrosParaCompletar * melhor.getPreco();
 
+            System.out.printf(
+                    "Escolhido: %s | kmDaOrigem=%.2f | nivelAoChegar=%.2f%n",
+                    melhor.getNome(),
+                    melhor.getKmDaOrigem(),
+                    nivelAoChegar
+            );
+
             melhor.setCustoEstimado(custo);
             melhor.setNivelAoChegar(nivelAoChegar);
 
             paradas.add(melhor);
 
+            System.out.printf(
+                    "kmAtual=%.2f | nivelAtual=%.2f | distanciaTotal=%.2f | kmDisponivel=%.2f | janela=%.2f até %.2f%n",
+                    kmAtual,
+                    nivelAtual,
+                    distanciaTotal,
+                    kmDisponivel,
+                    kmInicioJanela,
+                    kmLimite
+            );
+
             kmAtual = melhor.getKmDaOrigem();
             nivelAtual = 100;
+
+            System.out.printf(
+                    "Depois de abastecer: kmAtual=%.2f | nivelAtual=%.2f%n",
+                    kmAtual,
+                    nivelAtual
+            );
         }
         return paradas;
     }
