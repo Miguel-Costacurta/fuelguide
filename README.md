@@ -1,3 +1,4 @@
+[EM DESENVOLVIMENTO]
 # ⛽ FuelGuide
 
 **FuelGuide** é uma aplicação web para consulta e comparação de postos de combustível. Com um banco de dados de mais de 6.000 postos, o usuário pode pesquisar postos próximos e comparar preços de combustíveis de forma prática.
